@@ -11,18 +11,20 @@ from temporalio.worker import Worker
 # Always pass through external modules to the sandbox that you know are safe for
 # workflow use
 with workflow.unsafe.imports_passed_through():
-    from pydantic import BaseModel
+    from pydantic import BaseModel, SecretStr
     from temporalio.contrib.pydantic import pydantic_data_converter
 
 
 class MyPydanticModel(BaseModel):
     some_ip: IPv4Address
     some_date: datetime
+    some_secret: SecretStr
 
 
 @activity.defn
 async def my_activity(models: List[MyPydanticModel]) -> List[MyPydanticModel]:
     activity.logger.info("Got models in activity: %s" % models)
+    activity.logger.info("Got secret: %s" % models[0].some_secret.get_secret_value())
     return models
 
 
